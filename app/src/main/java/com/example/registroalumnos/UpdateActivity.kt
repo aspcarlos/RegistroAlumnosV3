@@ -20,52 +20,44 @@ class UpdateActivity : ActivityWithMenus() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityUpdateBinding.inflate(layoutInflater)
-        setContentView(R.layout.activity_update)
-
-        // Inicializamos la lista de alumnos
-        listaAlumnos = ArrayList()
+        setContentView(binding.root)
 
         // Evento click del botón actualizar alumno
         binding.bActualizar.setOnClickListener(){
 
-            val nombreAlumno = binding.NombreActualizar.text.toString()
-            val cursoAlumno = binding.CursoActualizar.text.toString()
+            var nombreAlumno = binding.NombreActualizar.text.toString()
+            var cursoAlumno = binding.CursoActualizar.text.toString()
 
             // Validaciones
-            if (nombreAlumno.isEmpty() || cursoAlumno.isEmpty())
+            if (nombreAlumno.isEmpty())
             {
                 Toast.makeText(this, "No puede haber campos vacíos", Toast.LENGTH_SHORT).show()
             }
             else
             {
-                val alumno = Alumnos(nombre = nombreAlumno, curso = cursoAlumno)
 
-                actualizarAlumno(alumno)
+                actualizarAlumno(nombreAlumno, cursoAlumno)
                 Toast.makeText(this, "Alumno actualizado", Toast.LENGTH_SHORT).show()
 
             }
         }
     }
 
-    fun actualizarAlumno(alumno: Alumnos) {
+    fun actualizarAlumno(alumno: String, curso:String) {
         CoroutineScope(Dispatchers.IO).launch {
-            AlumnosApp.database.interfazDao().updateAlumnos(alumno)
+            val alumno = AlumnosApp.database.interfazDao().obteneralumnopornombre(alumno)
+
+            if (listaAlumnos.isNotEmpty()) {
+                val alumno = listaAlumnos[0]
+
+                // Actualizar el curso del alumno
+                alumno.curso = curso
+
+                // Actualizar el alumno en la base de datos
+                AlumnosApp.database.interfazDao().updateAlumnos(alumno)
+            }
         }
     }
 
-    // Funcion para cerrar el teclado
-    fun cerrarTeclado() {
-        val view = this.currentFocus
-        if (view != null) {
-            val imm = getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
-            imm.hideSoftInputFromWindow(view.windowToken, 0)
-        }
-    }
-
-    // Funcion para limpiar los campos de texto
-    fun limpiarCampos(){
-        binding.NombreActualizar.text.clear()
-        binding.CursoActualizar.text.clear()
-    }
 
 }
